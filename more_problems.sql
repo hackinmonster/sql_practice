@@ -49,6 +49,66 @@ SELECT
 FROM
     patients;
 
+/*
+3) Show patient_id, first_name, last_name, and attending doctor's specialty.
+Show only the patients who has a diagnosis as 'Epilepsy' and the doctor's first name is 'Lisa'
+Check patients, admissions, and doctors tables for required information.
+*/
+
+select
+	patients.patient_id,
+    patients.first_name,
+    patients.last_name,
+    doctors.specialty
+From patients
+left join admissions ON patients.patient_id = admissions.patient_id
+LEFT JOIN doctors ON doctors.doctor_id = admissions.attending_doctor_id
+where
+	diagnosis LIKE ("%Epilepsy%") AND
+    doctors.first_name = "Lisa"
+
+/*
+4) All patients who have gone through admissions, can see their medical documents on our site. Those patients are given a temporary password after their first admission. Show the patient_id and temp_password.
+The password must be the following, in order:
+patient_id
+the numerical length of patient's last_name
+year of patient's birth_date
+*/
+
+select distinct
+	patients.patient_id,
+    concat(admissions.patient_id, len(patients.last_name), year(patients.birth_date)) AS temp_password
+from	
+	admissions
+left join patients on admissions.patient_id = patients.patient_id
+
+/*
+5) Each admission costs $50 for patients without insurance, and $10 for patients with insurance. All patients with an even patient_id have insurance.
+Give each patient a 'Yes' if they have insurance, and a 'No' if they don't have insurance. Add up the admission_total cost for each has_insurance group.
+*/
+
+with has_insurance as (
+
+select
+    (case
+    when (patient_id % 2 == 0) THEN 'Yes'
+    ELSE 'No'
+    END) as has_insurance
+from
+	admissions
+) 
+select
+	has_insurance,
+    ((case
+     when has_insurance = 'Yes' THEN 10
+     ELSE 50
+     end) * count(has_insurance)) as total_cost   
+from	
+	has_insurance
+group by
+	has_insurance
+
+
 
 
 
